@@ -24,7 +24,7 @@ pub mod sesame {
         website: String,
     ) -> Result<()> {
         msg!("Instruction: CreateOrganizer");
-        instructions::create_organizer::handler(ctx, title, website)
+        create_organizer::handler(ctx, title, website)
     }
 
     /// Create a new event, requires an organizer account
@@ -36,9 +36,22 @@ pub mod sesame {
         title: String,
         website: String,
         tickets_limit: u16,
+        timestamp: u64,
+        location_type: u8,
+        location: String,
+        image_url: String,
     ) -> Result<()> {
         msg!("Instruction: CreateEvent");
-        instructions::create_event::handler(ctx, title, website, tickets_limit)
+        create_event::handler(
+            ctx,
+            title,
+            website,
+            tickets_limit,
+            timestamp,
+            location_type,
+            location,
+            image_url,
+        )
     }
 
     /// Create a new ticket which belongs to someone
@@ -47,7 +60,7 @@ pub mod sesame {
     )]
     pub fn ticket_issue(ctx: Context<TicketIssue>, seat_id: String) -> Result<()> {
         msg!("Instruction: TicketIssue");
-        instructions::ticket_issue::handler(ctx, seat_id)
+        ticket_issue::handler(ctx, seat_id)
     }
 
     /// Delete a ticket that was refunded
@@ -56,7 +69,7 @@ pub mod sesame {
     )]
     pub fn ticket_delete(ctx: Context<TicketDelete>, seat_id: String) -> Result<()> {
         msg!("Instruction: TicketDelete");
-        instructions::ticket_delete::handler(ctx, seat_id)
+        ticket_delete::handler(ctx, seat_id)
     }
 
     /// Update the ticket, set as checked in
@@ -65,7 +78,7 @@ pub mod sesame {
     )]
     pub fn ticket_check_in(ctx: Context<TicketCheckIn>, seat_id: String) -> Result<()> {
         msg!("Instruction: TicketCheckIn");
-        instructions::ticket_check_in::handler(ctx, seat_id)
+        ticket_check_in::handler(ctx, seat_id)
     }
 
     /// Create an NFT POAP from a ticket
@@ -74,7 +87,7 @@ pub mod sesame {
     )]
     pub fn ticket_mint(ctx: Context<TicketMint>, seat_id: String) -> Result<()> {
         msg!("Instruction: TicketMint");
-        instructions::ticket_mint::handler(ctx, seat_id)
+        ticket_mint::handler(ctx, seat_id)
     }
 
     /// Update an organizers data
@@ -84,7 +97,7 @@ pub mod sesame {
         website: String,
     ) -> Result<()> {
         msg!("Instruction: UpdateOrganizer");
-        instructions::update_organizer::handler(ctx, title, website)
+        update_organizer::handler(ctx, title, website)
     }
 
     /// Update an events data
@@ -97,9 +110,22 @@ pub mod sesame {
         title: String,
         website: String,
         tickets_limit: u16,
+        timestamp: u64,
+        location_type: u8,
+        location: String,
+        image_url: String,
     ) -> Result<()> {
         msg!("Instruction: UpdateEvent");
-        instructions::update_event::handler(ctx, event_num, title, website, tickets_limit)
+        update_event::handler(
+            ctx,
+            title,
+            website,
+            tickets_limit,
+            timestamp,
+            location_type,
+            location,
+            image_url,
+        )
     }
 
     // Delete an event, including derived accounts
@@ -112,21 +138,3 @@ pub mod sesame {
 // TODO --
 //  when minting NFTs, donate some coins to me (as implemented in IX create_event)
 //  Add a PDA config & a function to update donate address and donate amount - or just update app ??
-
-// #[derive(Debug, AnchorSerialize, AnchorDeserialize, PartialEq)]
-// #[repr(u8)]
-// pub enum EventStatus {
-//     Created = 0,    // Tickets can be sold
-//     Started = 1,    // Delete no longer possible? Actually... ppl might still want to refund? ALSO: can just unset the keys to stop an action
-//     Ended = 2,      // Minting can be done
-// }
-// impl From<u8> for EventStatus {
-//     fn from(value: u8) -> EventStatus {
-//         match value {
-//             0 => EventStatus::Created,
-//             1 => EventStatus::Started,
-//             2 => EventStatus::Ended,
-//             _ => panic!("Unknown value: {}", value),
-//         }
-//     }
-// } TODO  - do we need anything like this?

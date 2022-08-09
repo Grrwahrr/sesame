@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 
-use crate::{donate_address, errors, state::Event, state::LocationType, state::Organizer};
+use crate::{donate_address, errors, state::Event, state::Organizer};
 
 #[event]
 pub struct EventCreated {
@@ -12,6 +12,10 @@ pub struct EventCreated {
     title: String,
     website: String,
     tickets_limit: u16,
+    timestamp: u64,
+    location_type: u8,
+    location: String,
+    image_url: String,
 )]
 pub struct CreateEvent<'info> {
     #[account(mut)]
@@ -57,6 +61,10 @@ pub fn handler(
     title: String,
     website: String,
     tickets_limit: u16,
+    timestamp: u64,
+    location_type: u8,
+    location: String,
+    image_url: String,
 ) -> Result<()> {
     // Update organizer
     let organizer = &mut ctx.accounts.organizer;
@@ -68,16 +76,17 @@ pub fn handler(
     // Store data
     let event = &mut ctx.accounts.event;
     event.version = 1;
+    event.admin = ctx.accounts.payer.key();
     event.ticket_authority_issuer = ctx.accounts.ticket_authority_issuer.key();
     event.ticket_authority_delete = ctx.accounts.ticket_authority_delete.key();
     event.ticket_authority_check_in = ctx.accounts.ticket_authority_check_in.key();
     event.tickets_limit = tickets_limit;
     event.title = title;
     event.website = website;
-    event.timestamp = 0; //TODO
-    event.location_type = LocationType::Txt; //TODO
-    event.location = "".to_string(); //TODO
-    event.artwork = "".to_string(); //TODO
+    event.timestamp = timestamp;
+    event.location_type = location_type.into();
+    event.location = location;
+    event.artwork = image_url;
 
     // Optional donation
     if ctx.accounts.donate_to.key() == donate_address::id() {

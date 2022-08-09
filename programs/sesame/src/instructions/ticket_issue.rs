@@ -14,7 +14,7 @@ pub struct TicketIssued {
     seat_id: String
 )]
 pub struct TicketIssue<'info> {
-    #[account(mut, address = event.ticket_authority_issuer @ errors::ErrorCode::NotAuthorized)]
+    #[account(mut)]
     pub payer: Signer<'info>,
 
     #[account(mut)]
@@ -60,6 +60,13 @@ pub fn handler(ctx: Context<TicketIssue>, seat_id: String) -> Result<()> {
 }
 
 pub fn access_control(ctx: &Context<TicketIssue>) -> Result<()> {
+    // Payer has to be one of those
+    if ctx.accounts.payer.key() != ctx.accounts.event.ticket_authority_issuer
+        && ctx.accounts.payer.key() != ctx.accounts.event.admin
+    {
+        return Err(errors::ErrorCode::NotAuthorized.into());
+    }
+
     // Make sure the ticket limit will not be exceeded (must be one less than MAX)
     if ctx.accounts.event.tickets_issued >= ctx.accounts.event.tickets_limit {
         return Err(errors::ErrorCode::NoMoreTicketsLeft.into());
@@ -67,4 +74,3 @@ pub fn access_control(ctx: &Context<TicketIssue>) -> Result<()> {
 
     Ok(())
 }
-//TODO the event creator authority should also be able to issue tickets :) to make admin panel easier

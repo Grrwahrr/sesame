@@ -30,6 +30,9 @@ pub struct Event {
     /// Version
     pub version: u8,
 
+    /// This key identifies the admin
+    pub admin: Pubkey,
+
     /// This key identifies the ticket vendor authority
     pub ticket_authority_issuer: Pubkey,
 

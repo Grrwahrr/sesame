@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 
-use crate::{errors, state::Organizer};
+use crate::state::Organizer;
 
 #[derive(Accounts)]
 #[instruction(
@@ -19,7 +19,7 @@ pub struct UpdateOrganizer<'info> {
 }
 
 pub fn handler(ctx: Context<UpdateOrganizer>, title: String, website: String) -> Result<()> {
-    // Store data
+    // Update data
     let organizer = &mut ctx.accounts.organizer;
     organizer.title = title;
     organizer.website = website;

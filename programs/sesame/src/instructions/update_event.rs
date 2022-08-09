@@ -1,13 +1,17 @@
 use anchor_lang::prelude::*;
 
-use crate::{errors, state::Event, state::LocationType};
+use crate::{errors, state::Event};
 
 #[derive(Accounts)]
 #[instruction(
     event_num: u32,
     title: String,
     website: String,
-    tickets_limit: u16
+    tickets_limit: u16,
+    timestamp: u64,
+    location_type: u8,
+    location: String,
+    image_url: String,
 )]
 pub struct UpdateEvent<'info> {
     pub authority: Signer<'info>,
@@ -31,12 +35,15 @@ pub struct UpdateEvent<'info> {
 
 pub fn handler(
     ctx: Context<UpdateEvent>,
-    event_num: u32,
     title: String,
     website: String,
     tickets_limit: u16,
+    timestamp: u64,
+    location_type: u8,
+    location: String,
+    image_url: String,
 ) -> Result<()> {
-    // Store data
+    // Update data
     let event = &mut ctx.accounts.event;
     event.ticket_authority_issuer = ctx.accounts.ticket_authority_issuer.key();
     event.ticket_authority_delete = ctx.accounts.ticket_authority_delete.key();
@@ -44,10 +51,10 @@ pub fn handler(
     event.tickets_limit = tickets_limit;
     event.title = title;
     event.website = website;
-    event.timestamp = 0; //TODO
-    event.location_type = LocationType::Txt; //TODO
-    event.location = "".to_string(); //TODO
-    event.artwork = "".to_string(); //TODO
+    event.timestamp = timestamp;
+    event.location_type = location_type.into();
+    event.location = location;
+    event.artwork = image_url;
 
     Ok(())
 }

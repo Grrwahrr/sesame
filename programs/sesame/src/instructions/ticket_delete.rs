@@ -14,7 +14,7 @@ pub struct TicketDeleted {
     seat_id: String
 )]
 pub struct TicketDelete<'info> {
-    #[account(mut, address = event.ticket_authority_delete @ errors::ErrorCode::NotAuthorized)]
+    #[account(mut)]
     pub authority: Signer<'info>,
 
     #[account(address = ticket.owner @ errors::ErrorCode::NotAuthorized)]
@@ -46,6 +46,13 @@ pub fn handler(ctx: Context<TicketDelete>, seat_id: String) -> Result<()> {
 }
 
 pub fn access_control(ctx: &Context<TicketDelete>) -> Result<()> {
+    // Authority has to be one of those
+    if ctx.accounts.authority.key() != ctx.accounts.event.ticket_authority_delete
+        && ctx.accounts.authority.key() != ctx.accounts.event.admin
+    {
+        return Err(errors::ErrorCode::NotAuthorized.into());
+    }
+
     // Verify the ticket is still in its initial state
     if ctx.accounts.ticket.state != TicketState::Initial {
         return Err(errors::ErrorCode::TicketAlreadyCheckedIn.into());
