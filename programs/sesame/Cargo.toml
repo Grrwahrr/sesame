@@ -1,0 +1,29 @@
+[package]
+name = "sesame"
+version = "0.1.0"
+description = "Created with Anchor"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "sesame"
+
+[features]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+cpi = ["no-entrypoint"]
+default = []
+
+[profile.release]
+#overflow-checks = true
+codegen-units = 1
+opt-level = "z"
+lto = true
+debug = false
+panic = "abort"
+strip = "debuginfo"
+
+[dependencies]
+anchor-lang = "0.24.2"
+anchor-spl = { version="0.24.2" }
