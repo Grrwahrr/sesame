@@ -17,7 +17,6 @@ pub struct TicketDelete<'info> {
     #[account(mut)]
     pub authority: Signer<'info>,
 
-    #[account(address = ticket.owner @ errors::ErrorCode::NotAuthorized)]
     pub ticket_owner: Signer<'info>,
 
     pub event: Box<Account<'info, Event>>,
@@ -53,9 +52,11 @@ pub fn access_control(ctx: &Context<TicketDelete>) -> Result<()> {
         return Err(errors::ErrorCode::NotAuthorized.into());
     }
 
-    // Verify the ticket is still in its initial state
-    if ctx.accounts.ticket.state != TicketState::Initial {
-        return Err(errors::ErrorCode::TicketAlreadyCheckedIn.into());
+    // Admin can also sign as ticket owner
+    if ctx.accounts.ticket_owner.key() != ctx.accounts.ticket.owner
+        && ctx.accounts.ticket_owner.key() != ctx.accounts.event.admin
+    {
+        return Err(errors::ErrorCode::NotAuthorized.into());
     }
 
     Ok(())

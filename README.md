@@ -82,27 +82,31 @@ sesamevent.xyz / io / ...
 
 
 ---
-### Admin Backend
+### Sesame WEBSITE
 
 Requires the use of Phantom Wallet.  
 
-Functionality:
-- Create an organization
-- Create events for an organization
-- Update organization data
-- Update event data
-- Issue a refund & delete specific ticket
-- Delete tickets in mass
-- manually issue ticket
-- manually check in
-- manually delete ticket
-- manually mint ticket
-
+- Admin:
+  - Create an organization
+  - Create events for an organization
+  - Update organization data
+  - Update event data
+  - ? Manually delete single ticket
+    - requires seat_id, co-signed by ticket / admin
+  - ? Delete all tickets for an event
+    - requires seat_id, co-signed by ticket / admin
+- User
+  - mint NFT for ticket
 
 ---
-### Store Front
+### Organizer integrated site
 
-Allows users to purchase tickets.
+- Allows users to purchase tickets
+  - may require list of seat_id
+- Issue ticket manually
+  - must be here to send mail, log "sale"
+- Issue refunds & delete ticket
+  - refund only here
 
 ---
 ### Check In App
