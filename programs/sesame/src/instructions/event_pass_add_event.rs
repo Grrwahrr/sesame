@@ -54,6 +54,3 @@ pub fn handler(ctx: Context<EventPassAddEvent>) -> Result<()> {
 
     Ok(())
 }
-
-//TODO: it is possible to create many EventPassValidEvent for the same event::key
-// However the EventPassHolderTicket is seeded from event_pass_holder::key + event::key

@@ -182,3 +182,8 @@ pub mod sesame {
 
 //TODO: Since event passes can be issued for any event, I probably want several ticket issue authorities per event?
 // That way organizers could work together
+
+//TODO: it is possible to create many EventPassValidEvent for the same event::key
+// However the EventPassHolderTicket is seeded from event_pass_holder::key + event::key
+
+//TODO: write proper tests
