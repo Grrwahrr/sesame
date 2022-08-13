@@ -118,23 +118,39 @@ Requires the use of Phantom Wallet.
 ### Organizer integrated site
 
 - Allows users to purchase tickets
-  - may require list of seat names
-- Issue ticket manually
+  - If Seating is arranged / specific
+    - this is a bit of a point of failure as that's not blockchain enforced
+    - requires a DB to store sold and refunded seat names
+
+---
+
+- Allows users to purchase event passes
+  - Event passes are linked to a NAME
+
+---
+
+- Allows for manual issuance of tickets
   - must be here to send mail, log "sale"
-- Issue refunds & delete ticket
-  - refund only here
 
+---
 
-- Need a page to create tickets for event passes
-  - is a page for a specific event_pass account (has the key)
-  - user needs to provide
+- Allow issuance of refunds & deletion of the ticket
+  - refund requires payment provider interaction
+
+---
+
+- Need a page to create tickets from event passes
+  - URL will be specific to ONE EventPass (= page has event_pass::key)
+  - user, upon buying receive a link to the redeem page
+  - and some pass associated data
     - NAME ( HAS TO BE PRECISE :( )
-    - pass offset (probably not requried())
+    - pass offset (probably not required)
     - pass_holder offset
-    - secret bytes (could be a random word also)
-  - I'll mail a link to a specific redeem website that knows the event_pass::key
-  - I'll show the list of events the user can create tickets for
-  - I'll show the tickets created / available
+    - secret bytes (could be a random word, a u32, gibberish)
+  - Opening the page shows all events the pass is valid for
+  - With the pass user data
+    - I'll show the tickets created / available for their pass
+    - Will make sure that the key derived from seed is correct
   - User will pick the event -> I get the offset number for the event
   - need to call an API to issue the ticket
     - I'll generate the key from seed and co-sign
