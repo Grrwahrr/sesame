@@ -1,3 +1,4 @@
+# Sesame
 This ticketing service is Blockchain based, storing data and interacting with a Blockchain requires spending tokens on transaction fees.  
 Thus, in order to use this ticketing system, a Blockchain wallet with a sufficient balance is required.  
 Each ticket related operation has its own associated authority.  
@@ -15,7 +16,6 @@ It requires a sufficient _SOL_ balance to interact with the Blockchain.
 This account can delete tickets. It will be used by an admin to delete issued tickets.  
 Deleting tickets frees up space on the Blockchain, which refunds the associated storage fee. This account collects those refunds.
 
-
 #### Check In
 This account can verify a ticket and set it as checked in. 
 Updating the Blockchain requires a sufficient _SOL_ balance to update the state.
@@ -25,13 +25,26 @@ Updating the Blockchain requires a sufficient _SOL_ balance to update the state.
 ### Ticket Issuance Workflow
 
 1) Lock [Payment](#payment-processor)
-2) Create a paper wallet from some seed:  
-`"open_sesame_" + event::key + secret`
 3) Call ticket_issue instruction on chain
 4) Charge [Payment](#payment-processor)
-5) Create a QR code containing email & seat_id & secret & ?event::pubkey->MINT
+5) Create a QR code containing 
+   - seat_id (for finding PDA)
+   - NAME & seat_name (or empty) & randomness (for Key Generation) + event::pubkey
+   - event::pubkey (enables minting on global site)
+   - should probably base64 encode or something
 6) [Mail](#mail-provider) ticket to customer
 7) [Log](#log-db) customer & purchase details
+
+### Ticket deletion
+- Delete the given ticket account
+- Increments event.tickets_deleted
+- Increments event.tickets_limit
+
+### How is specific seating arranged for?
+- Seating is printed on the ticket, stored in QR and used to derive owner key
+- vendor website has to have seating info
+- including the knowledge of what seats are booked and refunded
+- weak point (database could fail and give out seat multiple times)
 
 ---
 ### Domain  
@@ -41,15 +54,18 @@ sesamevent.xyz / io / ...
 ---
 ### Payment processor
 
+- Stripe
+  - https://stripe.com/docs/payments
 - PayPal?
 - Crypto.com?
   - https://crypto.com/eea/pay-merchant
   - https://pay-docs.crypto.com/#overview-accepting-payments
+- USDC on Solana?
 
 ---
 ### Mail Provider
 
-- Google Workspace
+- GMail
   - https://developers.google.com/gmail/api/guides/sending
 
 - Mailchimp?
@@ -94,7 +110,7 @@ Requires the use of Phantom Wallet.
   - ? Manually delete single ticket
     - requires seat_id, co-signed by ticket / admin
   - ? Delete all tickets for an event
-    - requires seat_id, co-signed by ticket / admin
+    - co-signed by ticket / admin
 - User
   - mint NFT for ticket
 
@@ -102,18 +118,37 @@ Requires the use of Phantom Wallet.
 ### Organizer integrated site
 
 - Allows users to purchase tickets
-  - may require list of seat_id
+  - may require list of seat names
 - Issue ticket manually
   - must be here to send mail, log "sale"
 - Issue refunds & delete ticket
   - refund only here
 
+
+- Need a page to create tickets for event passes
+  - is a page for a specific event_pass account (has the key)
+  - user needs to provide
+    - NAME ( HAS TO BE PRECISE :( )
+    - pass offset (probably not requried())
+    - pass_holder offset
+    - secret bytes (could be a random word also)
+  - I'll mail a link to a specific redeem website that knows the event_pass::key
+  - I'll show the list of events the user can create tickets for
+  - I'll show the tickets created / available
+  - User will pick the event -> I get the offset number for the event
+  - need to call an API to issue the ticket
+    - I'll generate the key from seed and co-sign
+      - Seed is NAME + event_pass::key + randomness
 ---
 ### Check In App
 
 Used in the venue to validate & update tickets.
 - Scan a users QR code
-- Verify & update ticket oon chain
+- Verify
+  - event_id on ticket must match app configured
+  - use seat_id to find account with app configured event_id
+  - make sure the seed generated KEY matches the stored one
+- Update ticket state on chain
 - Display success / error
 - Optimize: Read ticket state
   - indicate probably OK
@@ -121,7 +156,7 @@ Used in the venue to validate & update tickets.
     - is this an optimization?
     - test it 
 
-WASM app?
+### WASM app?
 - https://www.reddit.com/r/WebAssembly/comments/mlxe0y/qrbar_code_scanner_for_the_browser/
 - https://www.smithy.rs/examples/
 - https://github.com/piderman314/bardecoder
@@ -141,61 +176,17 @@ Allows users to mint their tickets into NFTs.
 ---
 ## TODO
 
-- Website
-  - SPA introduction site
-    - Sales pitch
-    - Donate link
-    - Documentation
-  - Admin panel
-  - Mint panel
-
 - WASM QR scanner
 
 - Ticket sale
 
-
-TIMEZONE to minute conversion
-```
-moment().utcOffset("+03:00").utcOffset() // returns 180
-moment().utcOffset("-09:00").utcOffset() // returns -540
-```
-
-Keypair from seeds
-```typescript
-Keypair.fromSeed(Uint8Array.from([
-    174, 47, 154, 16, 202, 193, 206, 113, 199, 190, 53, 133, 169, 175, 31, 56,
-    222, 53, 138, 189, 224, 216, 117, 173, 10, 149, 53, 45, 73, 251, 237, 246,
-    15, 185, 186, 82, 177, 240, 148, 69, 241, 227, 167, 80, 141, 89, 240, 121,
-    121, 35, 172, 247, 68, 251, 226, 218, 48, 63, 176, 109, 168, 89, 238, 135,
-]))
-
-console.log(PublicKey.isOnCurve(key.toBytes()));
-```
-
-Sign messages  
-```typescript
-const message = "The quick brown fox jumps over the lazy dog";
-const messageBytes = decodeUTF8(message);
-
-const signature = nacl.sign.detached(messageBytes, keypair.secretKey);
-const result = nacl.sign.detached.verify(
-  messageBytes,
-  signature,
-  keypair.publicKey.toBytes()
-);
-
-console.log(result);
-
-```
-
-
-
-NFT docs  
+---
+## NFT docs  
 https://docs.metaplex.com/programs/token-metadata/
 
 
 ---
-Deploy local
+## Deploy local
 ```bash
 # run in home folder (depends on ./test-ledger folder
 solana-test-validator

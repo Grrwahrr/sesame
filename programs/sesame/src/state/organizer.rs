@@ -4,7 +4,10 @@ use anchor_lang::prelude::*;
 #[derive(Default)]
 pub struct Organizer {
     /// Number of events created
-    pub counter: u32,
+    pub counter_events: u32,
+
+    /// Number of passes created
+    pub counter_passes: u32,
 
     /// Organizer Title
     pub title: String,

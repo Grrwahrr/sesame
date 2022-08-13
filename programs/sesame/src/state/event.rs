@@ -45,8 +45,11 @@ pub struct Event {
     /// The maximum number of tickets that can be issued
     pub tickets_limit: u16,
 
-    /// The number of tickets that has been issued
+    /// The number of tickets that have been issued
     pub tickets_issued: u16,
+
+    /// The number of tickets that have been deleted
+    pub tickets_deleted: u16,
 
     /// Event time; as unix time in seconds; UTC timezone
     pub timestamp: u64,

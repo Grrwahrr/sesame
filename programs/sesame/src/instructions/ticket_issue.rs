@@ -6,13 +6,9 @@ use crate::{errors, state::Event, state::Ticket};
 pub struct TicketIssued {
     event: Pubkey,
     ticket: Pubkey,
-    seat_id: String,
 }
 
 #[derive(Accounts)]
-#[instruction(
-    seat_id: String
-)]
 pub struct TicketIssue<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
@@ -23,7 +19,7 @@ pub struct TicketIssue<'info> {
     #[account(
         init,
         seeds = [
-            b"Ticket", event.key().as_ref(), seat_id.as_bytes()
+            b"Ticket", event.key().as_ref(), &event.tickets_issued.to_le_bytes()
         ],
         bump,
         payer = payer,
@@ -38,7 +34,7 @@ pub struct TicketIssue<'info> {
     pub system_program: Program<'info, System>,
 }
 
-pub fn handler(ctx: Context<TicketIssue>, seat_id: String) -> Result<()> {
+pub fn handler(ctx: Context<TicketIssue>) -> Result<()> {
     // Update the events counter for issued tickets
     let event = &mut ctx.accounts.event;
     event.tickets_issued = event
@@ -52,8 +48,7 @@ pub fn handler(ctx: Context<TicketIssue>, seat_id: String) -> Result<()> {
 
     emit!(TicketIssued {
         event: event.key(),
-        ticket: ticket.key(),
-        seat_id
+        ticket: ticket.key()
     });
 
     Ok(())

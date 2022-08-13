@@ -28,4 +28,13 @@ pub enum ErrorCode {
 
     #[msg("The event creator must not be the ticket delete authority")]
     InvalidTicketAuthorityDelete, // 6008
+
+    #[msg("The event pass creator must not be the pass issue authority")]
+    InvalidPassAuthorityIssuer, // 6009
+
+    #[msg("The event pass creator must not be the pass delete authority")]
+    InvalidPassAuthorityDelete, // 6010
+
+    #[msg("This event pass can not issue any more tickets")]
+    NoMoreTicketsLeftInEventPass, // 6011
 }

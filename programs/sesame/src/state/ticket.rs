@@ -26,7 +26,9 @@ impl Default for TicketState {
 }
 
 /**
- * Each ticket is its own account with state information as well as a pubkey identifying the ticket owner.
+ * Each ticket is its own account with state information as well as a public key identifying the ticket owner.
+ *
+ * The public key is generated from some data which is also on the ticket.
  */
 #[account]
 #[derive(Default)]

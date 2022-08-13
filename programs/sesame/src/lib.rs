@@ -29,7 +29,7 @@ pub mod sesame {
 
     /// Create a new event, requires an organizer account
     #[access_control(
-        instructions::create_event::access_control(&ctx)
+        create_event::access_control(&ctx)
     )]
     pub fn create_event(
         ctx: Context<CreateEvent>,
@@ -56,36 +56,36 @@ pub mod sesame {
 
     /// Create a new ticket which belongs to someone
     #[access_control(
-        instructions::ticket_issue::access_control(&ctx)
+        ticket_issue::access_control(&ctx)
     )]
-    pub fn ticket_issue(ctx: Context<TicketIssue>, seat_id: String) -> Result<()> {
+    pub fn ticket_issue(ctx: Context<TicketIssue>) -> Result<()> {
         msg!("Instruction: TicketIssue");
-        ticket_issue::handler(ctx, seat_id)
+        ticket_issue::handler(ctx)
     }
 
     /// Delete a ticket that was refunded
     #[access_control(
-        instructions::ticket_delete::access_control(&ctx)
+        ticket_delete::access_control(&ctx)
     )]
-    pub fn ticket_delete(ctx: Context<TicketDelete>, seat_id: String) -> Result<()> {
+    pub fn ticket_delete(ctx: Context<TicketDelete>, seat_id: u16) -> Result<()> {
         msg!("Instruction: TicketDelete");
         ticket_delete::handler(ctx, seat_id)
     }
 
     /// Update the ticket, set as checked in
     #[access_control(
-        instructions::ticket_check_in::access_control(&ctx)
+        ticket_check_in::access_control(&ctx)
     )]
-    pub fn ticket_check_in(ctx: Context<TicketCheckIn>, seat_id: String) -> Result<()> {
+    pub fn ticket_check_in(ctx: Context<TicketCheckIn>, seat_id: u16) -> Result<()> {
         msg!("Instruction: TicketCheckIn");
         ticket_check_in::handler(ctx, seat_id)
     }
 
     /// Create an NFT POAP from a ticket
     #[access_control(
-        instructions::ticket_mint::access_control(&ctx)
+        ticket_mint::access_control(&ctx)
     )]
-    pub fn ticket_mint(ctx: Context<TicketMint>, seat_id: String) -> Result<()> {
+    pub fn ticket_mint(ctx: Context<TicketMint>, seat_id: u16) -> Result<()> {
         msg!("Instruction: TicketMint");
         ticket_mint::handler(ctx, seat_id)
     }
@@ -102,7 +102,7 @@ pub mod sesame {
 
     /// Update an events data
     #[access_control(
-        instructions::update_event::access_control(&ctx, tickets_limit)
+        update_event::access_control(&ctx, tickets_limit)
     )]
     pub fn update_event(
         ctx: Context<UpdateEvent>,
@@ -128,13 +128,57 @@ pub mod sesame {
         )
     }
 
+    /// Create a new event pass, requires an organizer account
+    #[access_control(
+        create_event_pass::access_control(&ctx)
+    )]
+    pub fn create_event_pass(
+        ctx: Context<CreateEventPass>,
+        title: String,
+        website: String,
+        tickets_limit: u16,
+        image_url: String,
+    ) -> Result<()> {
+        msg!("Instruction: CreateEventPass");
+        create_event_pass::handler(ctx, title, website, tickets_limit, image_url)
+    }
+
+    /// Add an event to an event pass
+    pub fn event_pass_add_event(ctx: Context<EventPassAddEvent>) -> Result<()> {
+        msg!("Instruction: EventPassAddEvent");
+        event_pass_add_event::handler(ctx)
+    }
+
+    /// Create a new event pass holder
+    #[access_control(
+        event_pass_holder_create::access_control(&ctx)
+    )]
+    pub fn event_pass_holder_create(ctx: Context<EventPassHolderCreate>) -> Result<()> {
+        msg!("Instruction: EventPassHolderCreate");
+        event_pass_holder_create::handler(ctx)
+    }
+
+    /// For an event pass holder, create a new ticket for a specific event
+    #[access_control(
+        ticket_issue_for_event_pass::access_control(&ctx)
+    )]
+    pub fn ticket_issue_for_event_pass(ctx: Context<TicketIssueForEventPass>) -> Result<()> {
+        msg!("Instruction: TicketIssueForEventPass");
+        ticket_issue_for_event_pass::handler(ctx)
+    }
+
     // Delete an event, including derived accounts
-    //TODO: I need a function to delete an event?
-    //      As for the ticket accounts, they need to be deleted using JS
+    //TODO: I need a function to delete an entire event with all its PDA tickets?
+
+    // Delete an event pass, including derived accounts
+    //TODO
 }
 
-// TODO - verify rent exemption for organizer, event stay true when updating with longer strings
+// TODO - verify rent exemption for organizer, should be guaranteed when updating with longer strings
 
 // TODO --
 //  when minting NFTs, donate some coins to me (as implemented in IX create_event)
 //  Add a PDA config & a function to update donate address and donate amount - or just update app ??
+
+//TODO: Since event passes can be issued for any event, I probably want several ticket issue authorities per event?
+// That way organizers could work together

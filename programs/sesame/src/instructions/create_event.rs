@@ -43,7 +43,7 @@ pub struct CreateEvent<'info> {
     #[account(
         init,
         seeds = [
-            b"Event", payer.key().as_ref(), &organizer.counter.to_le_bytes()
+            b"Event", payer.key().as_ref(), &organizer.counter_events.to_le_bytes()
         ],
         bump,
         payer = payer,
@@ -68,8 +68,8 @@ pub fn handler(
 ) -> Result<()> {
     // Update organizer
     let organizer = &mut ctx.accounts.organizer;
-    organizer.counter = organizer
-        .counter
+    organizer.counter_events = organizer
+        .counter_events
         .checked_add(1)
         .ok_or(errors::ErrorCode::OverflowError)?;
 
