@@ -67,27 +67,27 @@ pub mod sesame {
     #[access_control(
         ticket_delete::access_control(&ctx)
     )]
-    pub fn ticket_delete(ctx: Context<TicketDelete>, seat_id: u16) -> Result<()> {
+    pub fn ticket_delete(ctx: Context<TicketDelete>, ticket_offset: u16) -> Result<()> {
         msg!("Instruction: TicketDelete");
-        ticket_delete::handler(ctx, seat_id)
+        ticket_delete::handler(ctx, ticket_offset)
     }
 
     /// Update the ticket, set as checked in
     #[access_control(
         ticket_check_in::access_control(&ctx)
     )]
-    pub fn ticket_check_in(ctx: Context<TicketCheckIn>, seat_id: u16) -> Result<()> {
+    pub fn ticket_check_in(ctx: Context<TicketCheckIn>, ticket_offset: u16) -> Result<()> {
         msg!("Instruction: TicketCheckIn");
-        ticket_check_in::handler(ctx, seat_id)
+        ticket_check_in::handler(ctx, ticket_offset)
     }
 
     /// Create an NFT POAP from a ticket
     #[access_control(
         ticket_mint::access_control(&ctx)
     )]
-    pub fn ticket_mint(ctx: Context<TicketMint>, seat_id: u16) -> Result<()> {
+    pub fn ticket_mint(ctx: Context<TicketMint>, ticket_offset: u16) -> Result<()> {
         msg!("Instruction: TicketMint");
-        ticket_mint::handler(ctx, seat_id)
+        ticket_mint::handler(ctx, ticket_offset)
     }
 
     /// Update an organizers data
@@ -162,7 +162,7 @@ pub mod sesame {
     #[access_control(
         ticket_issue_for_event_pass::access_control(&ctx)
     )]
-    pub fn ticket_issue_for_event_pass(ctx: Context<TicketIssueForEventPass>) -> Result<()> {
+    pub fn ticket_issue_for_event_pass(ctx: Context<TicketIssueForEventPass>, event_offset: u16, holder_offset: u16) -> Result<()> {
         msg!("Instruction: TicketIssueForEventPass");
         ticket_issue_for_event_pass::handler(ctx)
     }

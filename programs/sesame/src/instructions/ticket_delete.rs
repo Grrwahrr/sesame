@@ -6,12 +6,12 @@ use crate::{errors, state::Event, state::Ticket};
 pub struct TicketDeleted {
     event: Pubkey,
     ticket: Pubkey,
-    seat_id: u16,
+    ticket_offset: u16,
 }
 
 #[derive(Accounts)]
 #[instruction(
-    seat_id: u16
+    ticket_offset: u16
 )]
 pub struct TicketDelete<'info> {
     #[account(mut)]
@@ -24,7 +24,7 @@ pub struct TicketDelete<'info> {
 
     #[account(
         mut,
-        seeds = [b"Ticket", event.key().as_ref(), &seat_id.to_le_bytes()],
+        seeds = [b"Ticket", event.key().as_ref(), &ticket_offset.to_le_bytes()],
         bump,
         close = authority
     )]
@@ -33,7 +33,7 @@ pub struct TicketDelete<'info> {
     pub system_program: Program<'info, System>,
 }
 
-pub fn handler(ctx: Context<TicketDelete>, seat_id: u16) -> Result<()> {
+pub fn handler(ctx: Context<TicketDelete>, ticket_offset: u16) -> Result<()> {
     // The ticket account is closed using the close macro. The rent is refunded to the authority.
 
     // Update some event data
@@ -54,7 +54,7 @@ pub fn handler(ctx: Context<TicketDelete>, seat_id: u16) -> Result<()> {
     emit!(TicketDeleted {
         event: ctx.accounts.event.key(),
         ticket: ctx.accounts.ticket.key(),
-        seat_id
+        ticket_offset
     });
 
     Ok(())

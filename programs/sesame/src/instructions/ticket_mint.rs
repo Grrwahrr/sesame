@@ -7,13 +7,13 @@ use crate::{errors, state::Event, state::Ticket, state::TicketState};
 pub struct TicketNFTMinted {
     event: Pubkey,
     ticket: Pubkey,
-    seat_id: u16,
+    ticket_offset: u16,
     nft_account: Pubkey,
 }
 
 #[derive(Accounts)]
 #[instruction(
-    seat_id: u16
+    ticket_offset: u16
 )]
 pub struct TicketMint<'info> {
     /// The account that will receive the NFT
@@ -27,7 +27,7 @@ pub struct TicketMint<'info> {
 
     #[account(
         mut,
-        seeds = [b"Ticket", event.key().as_ref(), &seat_id.to_le_bytes()],
+        seeds = [b"Ticket", event.key().as_ref(), &ticket_offset.to_le_bytes()],
         bump,
     )]
     pub ticket: Box<Account<'info, Ticket>>,
@@ -59,7 +59,7 @@ pub struct TicketMint<'info> {
 
 /// Mint a ticket as an NFT with Metaplex data.
 /// The ticket account is not deleted, so that the rent can be reclaimed later.
-pub fn handler(ctx: Context<TicketMint>, seat_id: u16) -> Result<()> {
+pub fn handler(ctx: Context<TicketMint>, ticket_offset: u16) -> Result<()> {
     // Update ticket data
     let ticket = &mut ctx.accounts.ticket;
     ticket.state = TicketState::Minted;
@@ -76,7 +76,7 @@ pub fn handler(ctx: Context<TicketMint>, seat_id: u16) -> Result<()> {
     emit!(TicketNFTMinted {
         event: ctx.accounts.event.key(),
         ticket: ctx.accounts.ticket.key(),
-        seat_id,
+        ticket_offset,
         nft_account: ctx.accounts.nft_account.key()
     });
 

@@ -22,7 +22,7 @@ pub struct EventPass {
     pub counter_events: u16,
 
     /// The number of event pass holders
-    pub counter_holders: u64,
+    pub counter_holders: u16,
 
     /// Event pass title
     pub title: String,

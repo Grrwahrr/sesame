@@ -14,7 +14,7 @@ pub struct EventPassAddEvent<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
 
-    #[account(mut, constraint = event_pass.admin == payer.key())]
+    #[account(mut, constraint = event_pass.admin == payer.key() @ errors::ErrorCode::NotAuthorized)]
     pub event_pass: Box<Account<'info, EventPass>>,
 
     pub event: Box<Account<'info, Event>>,

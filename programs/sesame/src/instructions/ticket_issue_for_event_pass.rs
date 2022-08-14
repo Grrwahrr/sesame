@@ -22,9 +22,6 @@ pub struct TicketIssueForEventPass<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
 
-    #[account(address = event_pass_holder.owner)]
-    pub event_pass_owner: Signer<'info>,
-
     pub event_pass: Box<Account<'info, EventPass>>,
 
     #[account(
@@ -43,6 +40,9 @@ pub struct TicketIssueForEventPass<'info> {
         bump,
     )]
     pub event_pass_holder: Box<Account<'info, EventPassHolder>>,
+
+    #[account(address = event_pass_holder.owner)]
+    pub event_pass_owner: Signer<'info>,
 
     #[account(
         init,
@@ -113,12 +113,12 @@ pub fn access_control(ctx: &Context<TicketIssueForEventPass>) -> Result<()> {
         return Err(errors::ErrorCode::NotAuthorized.into());
     }
 
-    // Make sure the ticket limit will not be exceeded (must be one less than MAX)
+    // Make sure the events ticket limit will not be exceeded (must be one less than MAX)
     if ctx.accounts.event.tickets_issued >= ctx.accounts.event.tickets_limit {
         return Err(errors::ErrorCode::NoMoreTicketsLeft.into());
     }
 
-    // Make sure the event pass holder can still create tickets
+    // Make sure the pass holder can still create tickets
     if ctx.accounts.event_pass_holder.tickets_created >= ctx.accounts.event_pass.tickets_limit {
         return Err(errors::ErrorCode::NoMoreTicketsLeftInEventPass.into());
     }

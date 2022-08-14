@@ -6,12 +6,12 @@ use crate::{errors, state::Event, state::Ticket, state::TicketState};
 pub struct TicketCheckedIn {
     event: Pubkey,
     ticket: Pubkey,
-    seat_id: u16,
+    ticket_offset: u16,
 }
 
 #[derive(Accounts)]
 #[instruction(
-    seat_id: u16
+    ticket_offset: u16
 )]
 pub struct TicketCheckIn<'info> {
     pub authority: Signer<'info>,
@@ -23,13 +23,13 @@ pub struct TicketCheckIn<'info> {
 
     #[account(
         mut,
-        seeds = [b"Ticket", event.key().as_ref(), &seat_id.to_le_bytes()],
+        seeds = [b"Ticket", event.key().as_ref(), &ticket_offset.to_le_bytes()],
         bump,
     )]
     pub ticket: Box<Account<'info, Ticket>>,
 }
 
-pub fn handler(ctx: Context<TicketCheckIn>, seat_id: u16) -> Result<()> {
+pub fn handler(ctx: Context<TicketCheckIn>, ticket_offset: u16) -> Result<()> {
     // Update ticket data
     let ticket = &mut ctx.accounts.ticket;
     ticket.state = TicketState::CheckedIn;
@@ -37,7 +37,7 @@ pub fn handler(ctx: Context<TicketCheckIn>, seat_id: u16) -> Result<()> {
     emit!(TicketCheckedIn {
         event: ctx.accounts.event.key(),
         ticket: ticket.key(),
-        seat_id
+        ticket_offset
     });
 
     Ok(())

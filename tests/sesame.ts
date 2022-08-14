@@ -1,26 +1,25 @@
 import * as anchor from "@project-serum/anchor";
 import {Program} from "@project-serum/anchor";
 import {Sesame} from "../target/types/sesame";
+import {
+    deriveEvent,
+    deriveEventPass,
+    deriveEventPassHolder, deriveEventPassHolderTicket,
+    deriveEventPassValidEvent,
+    deriveOrganizer,
+    deriveTicket
+} from "./pda";
+import {
+    createEvent,
+    ticketIssue,
+    createOrganizer,
+    ticketCheckIn,
+    ticketDelete,
+    createEventPass,
+    eventPassAddEvent, eventPassCreateHolder, ticketIssueForEventPass
+} from "./instructions";
+import {expect} from "chai";
 
-const textEncoder = new TextEncoder();
-
-const deriveOrganizer = (program: Program<Sesame>, owner: anchor.web3.PublicKey) =>
-    anchor.web3.PublicKey.findProgramAddress(
-        [textEncoder.encode("Organizer"), owner.toBuffer()],
-        program.programId
-    );
-
-const deriveEvent = (program: Program<Sesame>, owner: anchor.web3.PublicKey, offset: number) =>
-    anchor.web3.PublicKey.findProgramAddress(
-        [textEncoder.encode("Event"), owner.toBuffer(), new anchor.BN(offset).toArrayLike(Buffer, "le", 4)],
-        program.programId
-    );
-
-const deriveTicket = (program: Program<Sesame>, event: anchor.web3.PublicKey, seatId: string) =>
-    anchor.web3.PublicKey.findProgramAddress(
-        [textEncoder.encode("Ticket"), event.toBuffer(), Buffer.from(seatId, "utf-8")],
-        program.programId
-    );
 
 
 describe("sesame", async () => {
@@ -41,115 +40,106 @@ describe("sesame", async () => {
     // Find some PDA addresses
     const [accDataOrganizer, bumpOrganizer] = await deriveOrganizer(program, accProvider.publicKey);
     const [accDataEvent, bumpEvent] = await deriveEvent(program, accProvider.publicKey, 0);
+    const [accDataEventPass, bumpEventPass] = await deriveEventPass(program, accProvider.publicKey, 0);
 
-    const [accDataTicket1, bumpTicket1] = await deriveTicket(program, accDataEvent, "1");
-    const [accDataTicket2, bumpTicket2] = await deriveTicket(program, accDataEvent, "2");
-    const [accDataTicket3, bumpTicket3] = await deriveTicket(program, accDataEvent, "3");
+    const [accDataTicket1, bumpTicket1] = await deriveTicket(program, accDataEvent, 0);
+    const [accDataTicket2, bumpTicket2] = await deriveTicket(program, accDataEvent, 1);
+    const [accDataTicket3, bumpTicket3] = await deriveTicket(program, accDataEvent, 2);
 
-    it("Create Organizer", async () => {
-        const tx = await program.methods
-            .createOrganizer("The Organizers", "https://the.organizers.tldr")
-            .accounts({
-                payer: accProvider.publicKey,
-                organizer: accDataOrganizer,
-            })
-            // .signers([accWalletAlice])
-            .rpc();
+    const [accDataEventPassValidEvent1, EventPassValidEvent1] = await deriveEventPassValidEvent(program, accDataEventPass, 0);
+    const [accDataEventPassValidEvent2, EventPassValidEvent2] = await deriveEventPassValidEvent(program, accDataEventPass, 1);
 
-        console.log("TX signature:", tx);
+    const [accDataEventPassHolder1, EventPassHolder1] = await deriveEventPassHolder(program, accDataEventPass, 0);
+    const [accDataEventPassHolder2, EventPassHolder2] = await deriveEventPassHolder(program, accDataEventPass, 1);
 
-        // Get the newly created account
-        const organizer = await program.account.organizer.fetch(accDataOrganizer);
-        console.log("Organizer account", organizer);
+    const [accDataEventPassHolderTicket1, EventPassHolderTicket1] = await deriveEventPassHolderTicket(program, accDataEventPassHolder1, accDataEvent);
+
+    it("Create organizer", async () => {
+        const organizer = await createOrganizer(program, accProvider.publicKey, accDataOrganizer);
+        expect(organizer).to.not.be.undefined;
+        // console.log("Organizer account", organizer);
+        //TODO: update organizer
     });
 
-    it("Create Event", async () => {
-        const tx = await program.methods
-            .createEvent("The Event", "https://the.event.tldr", 2)
-            .accounts({
-                payer: accProvider.publicKey,
-                donateTo: accWalletAlice.publicKey,
-                organizer: accDataOrganizer,
-                ticketAuthorityIssuer: accWalletAuthorityIssuer.publicKey,
-                ticketAuthorityDelete: accWalletAuthorityDelete.publicKey,
-                ticketAuthorityCheckIn: accWalletAuthorityCheckIn.publicKey,
-                event: accDataEvent,
-            })
-            .rpc();
-
-        console.log("TX signature:", tx);
-
-        // Get the newly created account
-        const event = await program.account.event.fetch(accDataEvent);
-        console.log("Event account", event);
+    it("Create event", async () => {
+        const event = await createEvent(program, accProvider.publicKey, accWalletAlice.publicKey, accDataOrganizer, accWalletAuthorityIssuer.publicKey, accWalletAuthorityDelete.publicKey, accWalletAuthorityCheckIn.publicKey, accDataEvent);
+        expect(event).to.not.be.undefined;
+        // console.log("Event account", event);
+        //TODO: update event
     });
 
-    it("Issue ticket 1", async () => {
+    it("Issue tickets", async () => {
         // Airdrop to authority
         const airdrop = await program.provider.connection.requestAirdrop(accWalletAuthorityIssuer.publicKey, 100_000_000);
         await program.provider.connection.confirmTransaction(airdrop);
 
-        const tx = await program.methods
-            .ticketIssue("1")
-            .accounts({
-                payer: accWalletAuthorityIssuer.publicKey,
-                event: accDataEvent,
-                ticket: accDataTicket1,
-                ticketOwner: accWalletAlice.publicKey,
-            })
-            .signers([accWalletAuthorityIssuer])
-            .rpc();
+        // Issue 1st ticket
+        const ticket1 = await ticketIssue(program, accWalletAuthorityIssuer, accDataEvent, accDataTicket1, accWalletAlice.publicKey, true);
+        expect(ticket1).to.not.be.undefined;
 
-        console.log("TX signature:", tx);
+        // Issue 2nd ticket
+        const ticket2 = await ticketIssue(program, accWalletAuthorityIssuer, accDataEvent, accDataTicket2, accWalletAlice.publicKey, true);
+        expect(ticket2).to.not.be.undefined;
 
-        // Get the newly created account
-        const ticket = await program.account.ticket.fetch(accDataTicket1);
-        console.log("Ticket account", ticket);
+        // Issue 3rd ticket; should fail as event only allows for 2 tickets
+        const ticket3 = await ticketIssue(program, accWalletAuthorityIssuer, accDataEvent, accDataTicket3, accWalletAlice.publicKey, false);
+        expect(ticket3).to.be.undefined;
+
+        // Attempt to re-issue 1st ticket; should fail
+        const ticket1re = await ticketIssue(program, accWalletAuthorityIssuer, accDataEvent, accDataTicket1, accWalletAlice.publicKey, false);
+        expect(ticket1re).to.be.undefined;
     });
 
-    // it("Check in ticket 1", async () => {
-    //     // Airdrop to authority
-    //     const airdrop = await program.provider.connection.requestAirdrop(accWalletAuthorityCheckIn.publicKey, 100_000_000);
-    //     await program.provider.connection.confirmTransaction(airdrop);
-    //
-    //     const tx = await program.methods
-    //         .ticketCheckIn("1")
-    //         .accounts({
-    //             authority: accWalletAuthorityCheckIn.publicKey,
-    //             ticketOwner: accWalletAlice.publicKey,
-    //             event: accDataEvent,
-    //             ticket: accDataTicket1,
-    //         })
-    //         .signers([accWalletAuthorityCheckIn, accWalletAlice])
-    //         .rpc();
-    //
-    //     console.log("TX signature:", tx);
-    //
-    //     // Get the newly created account
-    //     const ticket = await program.account.ticket.fetch(accDataTicket1);
-    //     console.log("Ticket account", ticket);
-    // });
+    it("Ticket check in", async () => {
+        // Airdrop to authority
+        const airdrop = await program.provider.connection.requestAirdrop(accWalletAuthorityCheckIn.publicKey, 100_000_000);
+        await program.provider.connection.confirmTransaction(airdrop);
 
-    it("Delete ticket 1", async () => {
+        // Check in works
+        const ticket1 = await ticketCheckIn(program, 0, accWalletAuthorityCheckIn, accWalletAlice, accDataEvent, accDataTicket1, true);
+        expect(ticket1).to.not.be.undefined;
+        expect(ticket1.state).to.have.key("checkedIn");
+
+        // Can not check in again
+        const ticket1re = await ticketCheckIn(program, 0, accWalletAuthorityCheckIn, accWalletAlice, accDataEvent, accDataTicket1, false);
+        expect(ticket1re).to.be.undefined;
+    });
+
+    it("Ticket delete", async () => {
         // Airdrop to authority
         const airdrop = await program.provider.connection.requestAirdrop(accWalletAuthorityDelete.publicKey, 100_000_000);
         await program.provider.connection.confirmTransaction(airdrop);
 
-        const tx = await program.methods
-            .ticketDelete("1")
-            .accounts({
-                authority: accWalletAuthorityDelete.publicKey,
-                ticketOwner: accWalletAlice.publicKey,
-                event: accDataEvent,
-                ticket: accDataTicket1,
-            })
-            .signers([accWalletAuthorityDelete, accWalletAlice])
-            .rpc();
+        const ticket2 = await ticketDelete(program, 1, accWalletAuthorityDelete, accWalletAlice, accDataEvent, accDataTicket2, true);
+        expect(ticket2).to.be.undefined;
+    });
 
-        console.log("TX signature:", tx);
 
-        // Get the newly created account TODO will fail ccause its deleted :)
-        const ticket = await program.account.ticket.fetch(accDataTicket1);
-        console.log("Ticket account", ticket);
+
+
+
+    it("Create event pass", async () => {
+        const eventPass = await createEventPass(program, accProvider.publicKey, accDataOrganizer, accWalletAuthorityIssuer.publicKey, accWalletAuthorityDelete.publicKey, accDataEventPass);
+        expect(eventPass).to.not.be.undefined;
+        // console.log("Event pass account", eventPass);
+    });
+
+    it("Event pass add valid event", async () => {
+        const eventPassValidEvent = await eventPassAddEvent(program, accProvider.publicKey, accDataEventPass, accDataEvent, accDataEventPassValidEvent1);
+        expect(eventPassValidEvent).to.not.be.undefined;
+        // console.log("Event pass valid event account", eventPassValidEvent);
+    });
+
+    it("Event pass crete holder", async () => {
+        const eventPassHolder = await eventPassCreateHolder(program, accWalletAuthorityIssuer, accDataEventPass, accDataEventPassHolder1, accWalletAlice.publicKey);
+        expect(eventPassHolder).to.not.be.undefined;
+        // console.log("Event pass holder account", eventPassHolder);
+    });
+
+    it("Issue tickets for event pass holder", async () => {
+        // Issue 1st ticket
+        const ticket3 = await ticketIssueForEventPass(program, 0, 0, accWalletAuthorityIssuer, accDataEventPass, accDataEventPassValidEvent1, accDataEventPassHolder1, accWalletAlice, accDataEventPassHolderTicket1, accDataEvent, accDataTicket3, accWalletAlice.publicKey, true);
+        expect(ticket3).to.not.be.undefined;
+        // console.log("Event pass holder created ticket account", ticket3);
     });
 });
