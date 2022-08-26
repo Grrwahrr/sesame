@@ -24,6 +24,9 @@ pub struct EventPass {
     /// The number of event pass holders
     pub counter_holders: u16,
 
+    /// The maximum number of passes that can be issued
+    pub limit_holders: u16,
+
     /// Event pass title
     pub title: String,
 

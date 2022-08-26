@@ -75,7 +75,7 @@ pub fn access_control(ctx: &Context<UpdateEvent>, tickets_limit: u16) -> Result<
 
     // Verify the ticket limit cannot be reduced to less than the number of tickets already issued
     if ctx.accounts.event.tickets_limit < tickets_limit {
-        return Err(errors::ErrorCode::TicketLimitTooSmall.into());
+        return Err(errors::ErrorCode::NoTicketsLeft.into());
     }
 
     Ok(())

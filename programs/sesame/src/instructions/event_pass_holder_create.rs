@@ -62,5 +62,10 @@ pub fn access_control(ctx: &Context<EventPassHolderCreate>) -> Result<()> {
         return Err(errors::ErrorCode::NotAuthorized.into());
     }
 
+    // Make sure the number of pass holders doesn't exceed limit
+    if ctx.accounts.event_pass.counter_holders >= ctx.accounts.event_pass.limit_holders {
+        return Err(errors::ErrorCode::LimitOfEventPassHoldersReached.into());
+    }
+
     Ok(())
 }

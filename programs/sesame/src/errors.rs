@@ -14,8 +14,8 @@ pub enum ErrorCode {
     #[msg("Ticket has already checked in")]
     TicketAlreadyCheckedIn, // 6003
 
-    #[msg("Ticket limit is less than the number of tickets already issued")]
-    TicketLimitTooSmall, // 6004
+    #[msg("There are no more tickets left")]
+    NoTicketsLeft, // 6004
 
     #[msg("Can not mint NFT for a ticket that was not checked in")]
     TicketWasNotCheckedIn, // 6005
@@ -37,4 +37,7 @@ pub enum ErrorCode {
 
     #[msg("This event pass can not issue any more tickets")]
     NoMoreTicketsLeftInEventPass, // 6011
+
+    #[msg("There are no more passes that can be issued")]
+    LimitOfEventPassHoldersReached, // 6012
 }
