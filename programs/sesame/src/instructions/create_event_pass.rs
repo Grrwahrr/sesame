@@ -52,6 +52,7 @@ pub fn handler(
     title: String,
     website: String,
     tickets_limit: u16,
+    limit_holders: u16,
     image_url: String,
 ) -> Result<()> {
     // Update organizer
@@ -68,6 +69,7 @@ pub fn handler(
     event_pass.pass_authority_issuer = ctx.accounts.pass_authority_issuer.key();
     event_pass.pass_authority_delete = ctx.accounts.pass_authority_delete.key();
     event_pass.tickets_limit = tickets_limit;
+    event_pass.limit_holders = limit_holders;
     event_pass.title = title;
     event_pass.website = website;
     event_pass.artwork = image_url;
