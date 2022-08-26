@@ -51,9 +51,9 @@ pub fn handler(
     ctx: Context<CreateEventPass>,
     title: String,
     website: String,
-    tickets_limit: u16,
-    limit_holders: u16,
     image_url: String,
+    limit_tickets: u16,
+    limit_holders: u16,
 ) -> Result<()> {
     // Update organizer
     let organizer = &mut ctx.accounts.organizer;
@@ -68,7 +68,7 @@ pub fn handler(
     event_pass.admin = ctx.accounts.payer.key();
     event_pass.pass_authority_issuer = ctx.accounts.pass_authority_issuer.key();
     event_pass.pass_authority_delete = ctx.accounts.pass_authority_delete.key();
-    event_pass.tickets_limit = tickets_limit;
+    event_pass.limit_tickets = limit_tickets;
     event_pass.limit_holders = limit_holders;
     event_pass.title = title;
     event_pass.website = website;

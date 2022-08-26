@@ -16,7 +16,7 @@ pub struct EventPass {
     pub pass_authority_delete: Pubkey,
 
     /// The maximum number of tickets that can be issued per pass holder
-    pub tickets_limit: u16,
+    pub limit_tickets: u16,
 
     /// The number of events that have been attached
     pub counter_events: u16,

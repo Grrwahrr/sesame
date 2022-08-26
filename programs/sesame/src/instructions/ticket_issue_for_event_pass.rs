@@ -119,7 +119,7 @@ pub fn access_control(ctx: &Context<TicketIssueForEventPass>) -> Result<()> {
     }
 
     // Make sure the pass holder can still create tickets
-    if ctx.accounts.event_pass_holder.tickets_created >= ctx.accounts.event_pass.tickets_limit {
+    if ctx.accounts.event_pass_holder.tickets_created >= ctx.accounts.event_pass.limit_tickets {
         return Err(errors::ErrorCode::NoMoreTicketsLeftInEventPass.into());
     }
 

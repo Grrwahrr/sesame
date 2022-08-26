@@ -136,12 +136,12 @@ pub mod sesame {
         ctx: Context<CreateEventPass>,
         title: String,
         website: String,
-        tickets_limit: u16,
-        limit_holders: u16,
         image_url: String,
+        limit_tickets: u16,
+        limit_holders: u16,
     ) -> Result<()> {
         msg!("Instruction: CreateEventPass");
-        create_event_pass::handler(ctx, title, website, tickets_limit, limit_holders, image_url)
+        create_event_pass::handler(ctx, title, website, image_url, limit_tickets, limit_holders)
     }
 
     /// Add an event to an event pass
