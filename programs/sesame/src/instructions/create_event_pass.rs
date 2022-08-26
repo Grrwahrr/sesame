@@ -11,8 +11,9 @@ pub struct EventPassCreated {
 #[instruction(
     title: String,
     website: String,
-    tickets_limit: u16,
     image_url: String,
+    limit_tickets: u16,
+    limit_holders: u16,
 )]
 pub struct CreateEventPass<'info> {
     #[account(mut)]

@@ -128,7 +128,7 @@ export const createEventPass = async(program: Program<Sesame>, payer: anchor.web
     let tx;
     try {
         tx = await program.methods
-            .createEventPass("The Event Pass", "https://the.eventpass.tld", 2, "https://some.broken.url/image.jpg")
+            .createEventPass("The Event Pass", "https://the.eventpass.tld", "https://some.broken.url/image.jpg", 2, 100)
             .accounts({
                 payer: payer,
                 organizer: organizer,
