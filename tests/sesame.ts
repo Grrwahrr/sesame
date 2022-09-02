@@ -16,7 +16,7 @@ import {
     ticketCheckIn,
     ticketDelete,
     createEventPass,
-    eventPassAddEvent, eventPassCreateHolder, ticketIssueForEventPass
+    eventPassAddEvent, eventPassCreateHolder, ticketIssueForEventPass, updateEventPass
 } from "./instructions";
 import {expect} from "chai";
 
@@ -121,6 +121,13 @@ describe("sesame", async () => {
     it("Create event pass", async () => {
         const eventPass = await createEventPass(program, accProvider.publicKey, accDataOrganizer, accWalletAuthorityIssuer.publicKey, accWalletAuthorityDelete.publicKey, accDataEventPass);
         expect(eventPass).to.not.be.undefined;
+        // console.log("Event pass account", eventPass);
+    });
+
+    it("Update event pass", async () => {
+        const eventPass = await updateEventPass(program, 0, accProvider.publicKey, accDataEventPass, accWalletAuthorityIssuer.publicKey, accWalletAuthorityDelete.publicKey);
+        expect(eventPass).to.not.be.undefined;
+        expect(eventPass.title).to.eq("The Updated Event Pass");
         // console.log("Event pass account", eventPass);
     });
 

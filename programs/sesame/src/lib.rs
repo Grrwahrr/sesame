@@ -10,7 +10,7 @@ declare_id!("2GTUkXFnABGVHFMqT1tVofBLPrBTAxzjb4Z2rpeMGsJG");
 
 pub mod donate_address {
     use anchor_lang::declare_id;
-    declare_id!("JCsJe2cWR3wp9a4kvY9JK4qTR1FiBwxXSzsHyTZuZfFA"); //TODO - what address
+    declare_id!("AeHJyaCFiabwH2RGxKoKFfBbZQEa53o7KvRe6eU8gEi3");
 }
 
 #[program]
@@ -163,9 +163,30 @@ pub mod sesame {
     #[access_control(
         ticket_issue_for_event_pass::access_control(&ctx)
     )]
-    pub fn ticket_issue_for_event_pass(ctx: Context<TicketIssueForEventPass>, event_offset: u16, holder_offset: u16) -> Result<()> {
+    pub fn ticket_issue_for_event_pass(
+        ctx: Context<TicketIssueForEventPass>,
+        event_offset: u16,
+        holder_offset: u16,
+    ) -> Result<()> {
         msg!("Instruction: TicketIssueForEventPass");
         ticket_issue_for_event_pass::handler(ctx)
+    }
+
+    /// Update data for an event pass
+    #[access_control(
+        update_event_pass::access_control(&ctx, limit_holders)
+    )]
+    pub fn update_event_pass(
+        ctx: Context<UpdateEventPass>,
+        event_pass_num: u32,
+        title: String,
+        website: String,
+        image_url: String,
+        limit_tickets: u16,
+        limit_holders: u16,
+    ) -> Result<()> {
+        msg!("Instruction: UpdateEventPass");
+        update_event_pass::handler(ctx, title, website, image_url, limit_tickets, limit_holders)
     }
 
     // Delete an event, including derived accounts
@@ -188,3 +209,5 @@ pub mod sesame {
 // However the EventPassHolderTicket is seeded from event_pass_holder::key + event::key
 
 //TODO: write proper tests
+// + update event
+// + update organizer

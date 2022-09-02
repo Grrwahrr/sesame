@@ -40,4 +40,10 @@ pub enum ErrorCode {
 
     #[msg("There are no more passes that can be issued")]
     LimitOfEventPassHoldersReached, // 6012
+
+    #[msg("There are already more event pass holders than allowed by the given limit")]
+    MoreHoldersExist, // 6013
+
+    #[msg("There are already more tickets for this event than allowed by the given limit")]
+    MoreTicketsIssued, // 6014
 }

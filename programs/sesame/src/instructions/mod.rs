@@ -9,6 +9,7 @@ pub mod ticket_issue;
 pub mod ticket_issue_for_event_pass;
 pub mod ticket_mint;
 pub mod update_event;
+pub mod update_event_pass;
 pub mod update_organizer;
 
 pub use create_event::*;
@@ -22,4 +23,5 @@ pub use ticket_issue::*;
 pub use ticket_issue_for_event_pass::*;
 pub use ticket_mint::*;
 pub use update_event::*;
+pub use update_event_pass::*;
 pub use update_organizer::*;

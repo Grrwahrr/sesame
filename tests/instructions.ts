@@ -146,6 +146,27 @@ export const createEventPass = async(program: Program<Sesame>, payer: anchor.web
     return await program.account.eventPass.fetch(eventPass);
 }
 
+export const updateEventPass = async(program: Program<Sesame>, offset: number, authority: anchor.web3.PublicKey, eventPass: anchor.web3.PublicKey, authorityIssuer: anchor.web3.PublicKey, authorityDelete: anchor.web3.PublicKey) => {
+    let tx;
+    try {
+        tx = await program.methods
+            .updateEventPass(offset, "The Updated Event Pass", "https://the.eventpass.tld", "https://some.broken.url/image.jpg", 2, 100)
+            .accounts({
+                authority: authority,
+                eventPass: eventPass,
+                passAuthorityIssuer: authorityIssuer,
+                passAuthorityDelete: authorityDelete,
+            })
+            .rpc();
+    }
+    catch (e) {
+        console.log("Error ", e);
+        return undefined;
+    }
+
+    return await program.account.eventPass.fetch(eventPass);
+}
+
 export const eventPassAddEvent = async(program: Program<Sesame>, authorityIssuer: anchor.web3.PublicKey, eventPass: anchor.web3.PublicKey, event: anchor.web3.PublicKey, eventPassValidEvent: anchor.web3.PublicKey) => {
     let tx;
     try {
