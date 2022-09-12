@@ -201,9 +201,12 @@ pub mod sesame {
 // TODO --
 //  when minting NFTs, donate some coins to me (as implemented in IX create_event)
 //  Add a PDA config & a function to update donate address and donate amount - or just update app ??
+// make donate amount a param?
 
 //TODO: Since event passes can be issued for any event, I probably want several ticket issue authorities per event?
 // That way organizers could work together
+
+//TODO several check in authorities may also be useful - since they can check in in parallel
 
 //TODO: it is possible to create many EventPassValidEvent for the same event::key
 // However the EventPassHolderTicket is seeded from event_pass_holder::key + event::key

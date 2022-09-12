@@ -22,18 +22,17 @@ Updating the Blockchain requires a sufficient _SOL_ balance to update the state.
 
 
 ---
-### Ticket Issuance Workflow
+### Ticket Issuance Flow
 
-1) Lock [Payment](#payment-processor)
-3) Call ticket_issue instruction on chain
-4) Charge [Payment](#payment-processor)
-5) Create a QR code containing 
+1) User visits web-shop of the organizer
+2) Pays for ticket using [Payment Processor](#payment-processor)
+3) Ticket is issued on chain
+4) Create a QR code containing 
+   - event::pubkey (verified in SCANNER; enables minting on global site)
    - seat_id (for finding PDA)
    - NAME & seat_name (or empty) & randomness (for Key Generation) + event::pubkey
-   - event::pubkey (enables minting on global site)
-   - should probably base64 encode or something
-6) [Mail](#mail-provider) ticket to customer
-7) [Log](#log-db) customer & purchase details
+5) [Mail](#mail-provider) ticket to customer
+6) [Log](#log-db) payment, customer and ticket details
 
 ### Ticket deletion
 - Delete the given ticket account
@@ -46,51 +45,38 @@ Updating the Blockchain requires a sufficient _SOL_ balance to update the state.
 - including the knowledge of what seats are booked and refunded
 - weak point (database could fail and give out seat multiple times)
 
+
 ---
 ### Domain  
 
 sesamevent.xyz / io / ...
 
+
 ---
 ### Payment processor
 
-- Stripe
-  - https://stripe.com/docs/payments
-- PayPal?
-- Crypto.com?
+- [x] Stripe
+- [ ] PayPal?
+- [ ] SolanaPay?
+  - https://solanapay.com/
+- [ ] Crypto.com?
   - https://crypto.com/eea/pay-merchant
   - https://pay-docs.crypto.com/#overview-accepting-payments
-- USDC on Solana?
 
 ---
 ### Mail Provider
 
-- GMail
-  - https://developers.google.com/gmail/api/guides/sending
+- [x] Workspace GMail
+- [ ] Mailchimp?
 
-- Mailchimp?
+
 ---
 ### Log DB
 
-- Data
-  - customer info
-  - payment details
-  - event pubkey
-  - ticket pubkey
-  - secret?
-
-- Privileges
-  - INSERT on log DB
-
-- Google Workspace
-  - https://developers.google.com/sheets/api
-  - https://developers.google.com/sheets/api/quickstart/nodejs
-  - https://developers.google.com/sheets/api/samples/writing#append_values
-  - https://developers.google.com/sheets/api/guides/values#node.js_4
-
-- Google Big Query?  
-- SQL?  
-- Slack?  
+- [x] Workspace -> Sheets
+- [ ] Google Big Query?
+- [ ] SQL?
+- [ ] Slack?
 
 
 ---
@@ -102,17 +88,15 @@ sesamevent.xyz / io / ...
 
 Requires the use of Phantom Wallet.  
 
-- Admin:
-  - Create an organization
-  - Create events for an organization
-  - Update organization data
-  - Update event data
-  - ? Manually delete single ticket
-    - requires seat_id, co-signed by ticket / admin
-  - ? Delete all tickets for an event
-    - co-signed by ticket / admin
-- User
-  - mint NFT for ticket
+- [x] Landing Page
+- [x] Documentation
+- [x] Admin:
+  - [x] Create & update organizer
+  - [x] Create & update events
+  - [ ] Create & update event passes
+  - [ ] Clean up event data
+    - delete ticket co-signed by ticket / admin
+  - [ ] Clean up event pass data
 
 ---
 ### Organizer integrated site
@@ -125,7 +109,6 @@ Requires the use of Phantom Wallet.
 ---
 
 - Allows users to purchase event passes
-  - Event passes are linked to a NAME
 
 ---
 
@@ -170,9 +153,9 @@ Used in the venue to validate & update tickets.
   - indicate probably OK
   - display LOCKED CHECKBOX to confirm
     - is this an optimization?
-    - test it 
+    - test it
 
-### WASM app?
+Resources  
 - https://www.reddit.com/r/WebAssembly/comments/mlxe0y/qrbar_code_scanner_for_the_browser/
 - https://www.smithy.rs/examples/
 - https://github.com/piderman314/bardecoder
@@ -193,8 +176,15 @@ Allows users to mint their tickets into NFTs.
 ## TODO
 
 - WASM QR scanner
-
-- Ticket sale
+  - done
+    - nothing
+  - todo
+    - WASM
+    - scan QR code
+    - decode JSON
+    - query ticket status -> show red if checked in; yellow if not yet;
+    - update ticket status on chain
+    - show green on confirmation
 
 ---
 ## NFT docs  
@@ -209,6 +199,7 @@ solana-test-validator
 anchor deploy
 # account receiving donations has to exist (be funded)
 solana transfer JCsJe2cWR3wp9a4kvY9JK4qTR1FiBwxXSzsHyTZuZfFA 10 --allow-unfunded-recipient 
+solana transfer 2WEXvXAiBVEcAD2gUAaurKpBvhpririWSEGZmZkdexzg 10 --allow-unfunded-recipient 
 # well fuck that generated a new program id lol
 # so tried to update ids everywhere and ran:
 solana program deploy /Users/grrwahrr/IdeaProjects/sesame/target/deploy/sesame.so
