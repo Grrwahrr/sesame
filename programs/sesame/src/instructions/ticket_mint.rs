@@ -1,7 +1,9 @@
 use anchor_lang::prelude::*;
-use anchor_spl::token::{Mint, Token, TokenAccount};
+use anchor_lang::solana_program::program::invoke;
+use anchor_spl::token::{self, Mint, MintTo, Token, TokenAccount};
+use mpl_token_metadata::instruction::{create_master_edition_v3, create_metadata_accounts_v2};
 
-use crate::{errors, state::Event, state::Ticket, state::TicketState};
+use crate::{donate_address, errors, state::Event, state::Ticket, state::TicketState};
 
 #[event]
 pub struct TicketNFTMinted {
@@ -31,6 +33,21 @@ pub struct TicketMint<'info> {
         bump,
     )]
     pub ticket: Box<Account<'info, Ticket>>,
+
+    /// CHECK: This is not dangerous because we don't read or write from this account
+    #[account(mut)]
+    pub mint: UncheckedAccount<'info>,
+
+    /// CHECK: This is not dangerous because we don't read or write from this account
+    #[account(mut)]
+    pub metadata: UncheckedAccount<'info>,
+
+    /// CHECK: This is not dangerous because we don't read or write from this account
+    #[account(mut)]
+    pub master_edition: UncheckedAccount<'info>,
+
+    /// CHECK: This is not dangerous because we don't read or write from this account
+    pub token_metadata_program: UncheckedAccount<'info>,
 
     #[account(init,
         seeds = [ b"NFTMint", event.key().as_ref(), ticket_owner.key().as_ref()],
@@ -73,14 +90,97 @@ pub fn handler(ctx: Context<TicketMint>, ticket_offset: u16) -> Result<()> {
     // https://spl.solana.com/token#non-fungible-tokens
     // https://docs.metaplex.com/programs/token-metadata/
 
+    let cpi_accounts = MintTo {
+        mint: ctx.accounts.mint.to_account_info(),
+        to: ctx.accounts.nft_owner.to_account_info(),
+        authority: ctx.accounts.nft_owner.to_account_info(),
+    };
+
+    let cpi_program = ctx.accounts.token_program.to_account_info();
+    let cpi_ctx = CpiContext::new(cpi_program, cpi_accounts);
+    token::mint_to(cpi_ctx, 1)?;
+    msg!("done mint_to");
+
+    let account_info = vec![
+        ctx.accounts.metadata.to_account_info(),
+        ctx.accounts.mint.to_account_info(),
+        ctx.accounts.nft_owner.to_account_info(),
+        ctx.accounts.nft_owner.to_account_info(),
+        ctx.accounts.token_metadata_program.to_account_info(),
+        ctx.accounts.token_program.to_account_info(),
+        ctx.accounts.system_program.to_account_info(),
+        ctx.accounts.rent.to_account_info(),
+    ];
+    let creator = vec![
+        mpl_token_metadata::state::Creator {
+            address: donate_address::id(),
+            verified: false,
+            share: 100,
+        },
+        mpl_token_metadata::state::Creator {
+            address: ctx.accounts.nft_owner.key(),
+            verified: false,
+            share: 0,
+        },
+    ];
+    msg!("Creator Assigned");
+    let symbol = "Event POPA".to_string();
+    let title = "POAP Event Title".to_string();
+    let uri = "URL".to_string();
+    invoke(
+        &create_metadata_accounts_v2(
+            ctx.accounts.token_metadata_program.key(),
+            ctx.accounts.metadata.key(),
+            ctx.accounts.mint.key(),
+            ctx.accounts.nft_owner.key(),
+            ctx.accounts.nft_owner.key(),
+            ctx.accounts.nft_owner.key(),
+            title,
+            symbol,
+            uri,
+            Some(creator),
+            1,
+            true,
+            false,
+            None,
+            None,
+        ),
+        account_info.as_slice(),
+    )?;
+    msg!("done create_metadata_accounts_v2");
+
+    let master_edition_infos = vec![
+        ctx.accounts.master_edition.to_account_info(),
+        ctx.accounts.mint.to_account_info(),
+        ctx.accounts.nft_owner.to_account_info(),
+        ctx.accounts.nft_owner.to_account_info(),
+        ctx.accounts.metadata.to_account_info(),
+        ctx.accounts.token_metadata_program.to_account_info(),
+        ctx.accounts.token_program.to_account_info(),
+        ctx.accounts.system_program.to_account_info(),
+        ctx.accounts.rent.to_account_info(),
+    ];
+    invoke(
+        &create_master_edition_v3(
+            ctx.accounts.token_metadata_program.key(),
+            ctx.accounts.master_edition.key(),
+            ctx.accounts.mint.key(),
+            ctx.accounts.nft_owner.key(),
+            ctx.accounts.nft_owner.key(),
+            ctx.accounts.metadata.key(),
+            ctx.accounts.nft_owner.key(),
+            Some(0),
+        ),
+        master_edition_infos.as_slice(),
+    )?;
+    msg!("done create_master_edition_v3");
+
     emit!(TicketNFTMinted {
         event: ctx.accounts.event.key(),
         ticket: ctx.accounts.ticket.key(),
         ticket_offset,
         nft_account: ctx.accounts.nft_account.key()
     });
-
-    todo!();
 
     Ok(())
 }

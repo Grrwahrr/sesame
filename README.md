@@ -192,8 +192,23 @@ https://docs.metaplex.com/programs/token-metadata/
 
 
 ---
-## Deploy local
+## Deploy
+
 ```bash
+
+solana airdrop 1
+solana balance
+
+avm use latest
+solana-install update
+
+solana config set --url devnet
+solana config set --url testnet
+solana config set --url localhost
+
+solana --version
+solana cluster-version
+
 # run in home folder (depends on ./test-ledger folder
 solana-test-validator
 anchor deploy
@@ -203,7 +218,10 @@ solana transfer 2WEXvXAiBVEcAD2gUAaurKpBvhpririWSEGZmZkdexzg 10 --allow-unfunded
 # well fuck that generated a new program id lol
 # so tried to update ids everywhere and ran:
 solana program deploy /Users/grrwahrr/IdeaProjects/sesame/target/deploy/sesame.so
+solana program deploy /Users/grrwahrr/IdeaProjects/sesame/target/deploy/sesame.so --skip-fee-check # fails because of fee? about 8 SOL for devnet
 # that seems to have worked
 #Program Id: 2GTUkXFnABGVHFMqT1tVofBLPrBTAxzjb4Z2rpeMGsJG
 
 ```
+
+https://stackoverflow.com/questions/68849313/i-can-not-deploy-the-program-to-dev-net-with-anchor
